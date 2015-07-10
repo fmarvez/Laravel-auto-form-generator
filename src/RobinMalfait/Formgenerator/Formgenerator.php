@@ -13,6 +13,24 @@ class Formgenerator{
         $this->form = $form;
     }
 
+    /*
+     * Sorts the original columns/fields array by the form generated orderArray
+     * @param array $array The fields/columns from the database
+     * @param array $orderedArray The array provided by the view and is the desired order
+     *
+     * @return array The sorted by user array
+     */
+    function sortArrayByArray(Array $array, Array $orderArray) {
+        $ordered = array();
+        foreach($orderArray as $key) {
+            if(array_key_exists($key,$array)) {
+                $ordered[$key] = $array[$key];
+                unset($array[$key]);
+            }
+        }
+        return $ordered + $array;
+    }
+
     public function generate($model, $options = array())
     {
         $fields = array();
@@ -27,6 +45,14 @@ class Formgenerator{
         $columns    = DB::getDoctrineSchemaManager()->listTableDetails($table)->getColumns();
 
         $this->setSettings($options);
+
+        /*
+         * Order the files by the optional orderBy array
+         */
+        $orderBy = $this->getSettings("orderBy");
+        if($orderBy && count($orderBy) > 0) {
+            $fields = $this->sortArrayByArray($fields, $orderBy);
+        }
 
         /**
          * Loop through all the fields from the model
@@ -223,8 +249,12 @@ class Formgenerator{
 
     protected function getFields($table)
     {
+
+        $orderByArray = $this->getSettings('orderBy');
+
         $field_names = array();
         $columns = DB::select("SHOW COLUMNS FROM `" . strtolower($table) . "`");
+
         foreach ($columns as $c) {
             $field = $c->Field;
             $field_names[$field] = $field;
@@ -245,28 +275,16 @@ class Formgenerator{
     protected function getContentBefore($fieldName)
     {
         $content = $this->getSettings('extras', $fieldName, 'content_before');
-        $wildcardContent = $this->getSettings('extras', '*', 'content_before');
-
-        if (isset($wildcardContent) AND !empty($wildcardContent)) {
-          $content = (isset($content) AND !empty($content)) ? array_push($content, $wildcardContent) : $wildcardContent;
-        }
-        
         if (isset($content) AND !empty($content)) {
-            return $content;
+            return $this->getSettings('extras', $fieldName, 'content_before');
         }
     }
 
     protected function getContentAfter($fieldName)
     {
         $content = $this->getSettings('extras', $fieldName, 'content_after');
-        $wildcardContent = $this->getSettings('extras', '*', 'content_after');
-
-        if (isset($wildcardContent) AND !empty($wildcardContent)) {
-          $content = (isset($content) AND !empty($content)) ? array_push($wildcardContent, $content) : $wildcardContent;
-        }
-
         if (isset($content) AND !empty($content)) {
-            return $content;
+            return $this->getSettings('extras', $fieldName, 'content_after');
         }
     }
 
@@ -308,7 +326,8 @@ class Formgenerator{
                 'show'      => true,
                 'text'      => 'Submit',
                 'class'     => 'btn btn-success',
-            )
+            ),
+            "orderBy"       =>array()
         );
 
         $this->settings = array_merge($settings, $options);

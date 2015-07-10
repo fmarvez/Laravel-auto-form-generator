@@ -1,6 +1,8 @@
 # Form Generator
 This is a auto form generator for Laravel 4. This package allows you to auto generate a form from a model.
 
+This forked version adds orderBy as an option to manually order your form fields.
+
 - [Form Generator on Packagist](https://packagist.org/packages/robin-malfait/formgenerator)
 - [Form Generator on GitHub](https://github.com/RobinMalfait/Laravel-auto-form-generator)
 
@@ -82,6 +84,12 @@ As a second param you can pass an options array for example:
 				),
 			),
 		),
+		
+        // If you want to manually order different from the columns order in the database/model 
+        'orderBy'       =>(
+            "last_name",
+            "first_name",
+        ),
 
 		// Add a class to a field
 		'extras' => array(
