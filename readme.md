@@ -86,7 +86,7 @@ As a second param you can pass an options array for example:
 		),
 		
         // If you want to manually order different from the columns order in the database/model 
-        'orderBy'       =>(
+        'orderBy'           =>array(
             "last_name",
             "first_name",
         ),
